@@ -61,6 +61,7 @@ const runEntries = new Set(runs.flatMap((run) => run.events.filter((event) => ev
 
 // A/B attestations record a result, and their versions are not V-numbers. See is_lesson in agent/memory.py.
 const originOf = (entry) => {
+  if (entry.blob.planted) return "planted";
   if (!/^V\d+$/.test(entry.blob.to_version)) return "attestation";
   return runEntries.has(entry.entry_id) ? "run" : "rehearsal";
 };
@@ -108,7 +109,9 @@ const memory = registry.entries.map((entry) => {
       reporter: row.actor,
       supported: row.supported,
       tx: row.tx,
-      note: `Reported by ${labelOf(agentOf.get(row.actor.toLowerCase()) ?? "agent?")} after a run that inherited this entry.`,
+      note: row.supported
+        ? `Reported by ${labelOf(agentOf.get(row.actor.toLowerCase()) ?? "agent?")} after a run that inherited this entry.`
+        : `Contradicted by ${labelOf(agentOf.get(row.actor.toLowerCase()) ?? "agent?")} after a controlled run with and without this lesson.`,
     })),
     promotions: promotionsOf(entry),
   };

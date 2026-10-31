@@ -27,13 +27,13 @@ export interface Evidence {
   note: string;
 }
 
-export type EntryOrigin = "run" | "rehearsal" | "attestation";
+export type EntryOrigin = "run" | "rehearsal" | "attestation" | "planted";
 
 export interface MemoryEntry {
   entry_id: string;
   cid: string;
   tx: string;
-  // A recorded run, an earlier rehearsal, or an A/B attestation that records a result.
+  // A recorded run, an earlier rehearsal, an A/B attestation, or a wrong lesson published as a test.
   origin: EntryOrigin;
   author: string;
   agent_id: string;

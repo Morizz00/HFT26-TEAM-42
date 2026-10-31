@@ -1492,6 +1492,38 @@ button.source-badge:hover {
   height: 100%;
 }
 
+.correction {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+.correction p {
+  margin: 0;
+}
+.correction ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.correction li strong {
+  display: block;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.correction li span {
+  font-size: 13px;
+}
+.correction a,
+.correction button {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .memory-filter {
   display: flex;
   flex-wrap: wrap;
