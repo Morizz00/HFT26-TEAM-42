@@ -1,6 +1,6 @@
 # 10 - Demo Video
 
-Everything needed to make the demo video: what to show, what to say, and how to use Claude to build it. Target length is 3 minutes.
+Everything needed to make the demo video: what to show and what to say. Target length is 3 minutes.
 
 ## The one idea
 
@@ -104,31 +104,9 @@ Most systems remember what agents learned. Ours also catches when a lesson was w
 | "It catches every bad lesson" | "It caught this planted bad lesson" |
 | "Reviewers make the agent better" | "Reviewers give it independent feedback" |
 
-## Making it with Claude
-
-A screen recording with your own voice is the safest version, because everything shown is real. Use Claude to tighten the words and plan the edit.
-
-Paste this into Claude with this file attached:
-
-```text
-Here is the script for our 3-minute hackathon demo video. Make the narration
-easier to say out loud, using short plain sentences. Keep every number exactly
-as written and don't add new claims. Then give me a shot list with a timestamp,
-what is on screen, on-screen caption, and narration for each scene.
-```
-
-To turn it into captions after recording, paste the transcript into Claude and ask:
-
-```text
-Turn this narration into an SRT caption file. Keep each caption under 2 lines
-and do not change the wording.
-```
-
-If you use AI voice or generated visuals, use them only for narration and title cards. Keep real screens for anything shown as evidence.
-
 ## Publishing the video
 
-1. Upload the video to Google Drive.
-2. Set sharing to **Anyone with the link: Viewer**, then test the link in a private window.
-3. Replace `ADD_DRIVE_LINK_HERE` under **Demo video** in the README with the link.
+1. Upload the video to the team Drive folder: https://drive.google.com/drive/folders/1X0ruFJj3fJQVh-ZephUnmo2QtTJqtX2F?usp=sharing
+2. Check the folder is set to **Anyone with the link: Viewer**, then test it in a private window.
+3. The README already links to this folder under **Demo video**.
 4. Add the same link to the submission PR description.
