@@ -157,6 +157,7 @@ class Chain:
                         "cid": cid,
                         "tier": TIERS[tier],
                         "confidence": round(confidence(evidence, now), 4),
+                        "disputed": contradicted > supported,
                         "entry": entry,
                     }
                 )

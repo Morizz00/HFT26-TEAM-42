@@ -47,16 +47,19 @@ def is_lesson(entry):
 
 
 def select(found):
-    """Ranks by tier, confidence, then recency, and keeps room for negative memory."""
+    """Ranks by tier, confidence, then recency, and keeps room for negative memory.
+
+    Disputed entries stay on-chain for audit but are not recommended.
+    """
     ranked = sorted(
-        found, key=lambda item: (TIERS.index(item["tier"]), item["confidence"], item["created_at"]), reverse=True
+        (item for item in found if not item.get("disputed")), key=lambda item: (TIERS.index(item["tier"]), item["confidence"], item["created_at"]), reverse=True
     )
     avoid = [item for item in ranked if item["kind"] == "regression"][:AVOID_SLOTS]
     lessons = [item for item in ranked if item["kind"] != "regression"]
     return avoid + lessons[: TOP_K - len(avoid)]
 
 
-def for_prompt(entry_id, cid, tier, confidence, entry):
+def for_prompt(entry_id, cid, tier, confidence, entry, disputed=False):
     return {
         "entry_id": entry_id,
         "cid": cid,
@@ -65,6 +68,7 @@ def for_prompt(entry_id, cid, tier, confidence, entry):
         "confidence": confidence,
         "summary": summarise(entry),
         "created_at": entry["created_at"],
+        "disputed": disputed,
     }
 
 
@@ -74,11 +78,11 @@ def retrieve_bridge(signature, get_json):
     return [
         for_prompt(item["entry_id"], item["cid"], item["tier"], item["confidence"], item["entry"])
         for item in ranked
-        if is_lesson(item["entry"])
+        if is_lesson(item["entry"]) and not item.get("disputed")
     ]
 
 
-def retrieve_chain(signature, rpc_url, registry_address, get_json):
+def retrieve_chain(signature, rpc_url, registry_address, get_json, include_disputed=False):
     """Agent B reads the registry itself, over its own RPC connection."""
     from web3 import Web3
 
@@ -97,8 +101,9 @@ def retrieve_chain(signature, rpc_url, registry_address, get_json):
             entry = get_json(f"/entry/{cid}")
             if not is_lesson(entry):
                 continue
-            found.append(for_prompt("0x" + bytes(entry_id).hex(), cid, TIERS[tier], confidence, entry))
-    return select(found)
+            disputed = contradicted > supported
+            found.append(for_prompt("0x" + bytes(entry_id).hex(), cid, TIERS[tier], confidence, entry, disputed))
+    return found if include_disputed else select(found)
 
 
 def prompt_block(memory):

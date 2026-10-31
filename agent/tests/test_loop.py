@@ -2,6 +2,8 @@ import json
 
 import pytest
 
+import httpx
+
 from agent import events, loop
 from agent import memory as memory_module
 from agent.events import EventSink
@@ -86,6 +88,50 @@ def test_bad_critic_twice_scores_quality_zero():
 
     assert loop.critique_code(Broken(), "spec", "code", Result())["quality_score"] == 0
     assert Broken.calls == 2
+
+
+class Panel:
+    reviewers = ["kimi", "glm"]
+
+    def __init__(self, reply):
+        self.reply = reply
+        self.prompts = []
+        self.turns = []
+
+    def review(self, turn, system, user):
+        self.turns.append(turn)
+        self.prompts.append(system + user)
+        if isinstance(self.reply, Exception):
+            raise self.reply
+        return self.reply
+
+
+def version():
+    return loop.Version("V1", "code", [50, 50, 50, 50], 5000, {"findings": []}, "n1", ["test_a"])
+
+
+def test_reviewer_findings_are_parsed_and_stay_anonymous():
+    llm = Panel('<think>hmm</think>{"findings":[{"severity":"high","issue":"x","suggested_fix":"y"}],"quality_score":99}')
+    assert loop.review_code(llm, "spec", version(), 1) == [{"severity": "high", "issue": "x", "suggested_fix": "y"}]
+    assert llm.turns == [1]
+    assert not any(name in llm.prompts[0].lower() for name in ("kimi", "glm", "deepseek", "qwen"))
+
+
+def test_a_failed_reviewer_never_stops_the_run():
+    assert loop.review_code(Panel("not json"), "spec", version(), 0) == []
+    assert loop.review_code(Panel(httpx.ConnectError("down")), "spec", version(), 0) == []
+
+
+def test_no_reviewers_means_the_original_loop():
+    class Single:
+        pass
+
+    assert loop.review_code(Single(), "spec", version(), 0) == []
+
+
+def test_a_reviewer_cannot_change_the_score():
+    """Only the fixed critic may score, or a total could rise because the grader changed."""
+    assert "quality_score" not in loop.REVIEW_SYSTEM
 
 
 @pytest.mark.parametrize(

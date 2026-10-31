@@ -1,12 +1,16 @@
 """A/B test of inherited memory: Agent B's V1 on a sibling task, with and without it."""
+import json
 import statistics
 from collections import Counter
 from pathlib import Path
 
 from agent import embed, harness, loop, memory
 from agent import entry as entries
+from agent.events import RUNS_DIR, EventSink
+from agent.settlement import BakedSettlement
 
-BAKED = Path(__file__).parent.parent / "shared" / "baked"
+STUB_AUTHOR = "0x" + "00" * 20
+BAKED =Path(__file__).parent.parent / "shared" / "baked"
 OUTPUT = BAKED / "experiment.json"
 CODE_DIR = BAKED / "experiment_code"
 
@@ -71,6 +75,36 @@ def run(llm, signature, inherited, trials):
         "inherited": [item["entry_id"] for item in inherited],
         "confidence": [],
     }
+
+
+def run_loop_once(llm, signature, run_id):
+    sink = EventSink(run_id, "agentA")
+    tree = loop.Tree(sink)
+    best = loop.run(llm, sink, BakedSettlement(sink, tree), tree, signature, "agentA", STUB_AUTHOR, False)
+    events = [json.loads(line) for line in sink.path.read_text(encoding="utf-8").splitlines()]
+    finished = next(event["data"] for event in events if event["type"] == "run.finished")
+    return {
+        "scores": best.scores,
+        "total": best.total,
+        "by_version": finished["scores_by_version"],
+        "gain": finished["total_gain"],
+        "regressions": sum(event["type"] == "regression.recorded" for event in events),
+    }
+
+
+def compare_reviewers(llm, signature, trials, output, stamp):
+    """Same loop with and without rotating reviewers. Arms alternate so provider drift hits both."""
+    panel = list(llm.reviewers)
+    result = {"task_signature": signature, "reviewers": panel, "control": [], "panel": [], "errors": []}
+    for trial in range(1, trials + 1):
+        for name, reviewers in (("control", []), ("panel", panel)):
+            llm.reviewers = reviewers
+            try:
+                result[name].append(run_loop_once(llm, signature, f"review-{stamp}-{signature}-{name}-{trial}"))
+            except Exception as error:  # A lost trial is reported, and must not lose the others.
+                result["errors"].append({"arm": name, "trial": trial, "error": type(error).__name__})
+            output.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
+    return result
 
 
 def attest(result, settlement, author):

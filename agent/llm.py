@@ -12,7 +12,7 @@ FEATHERLESS_URL = "https://api.featherless.ai/v1/chat/completions"
 MAX_RETRIES = 2
 TIMEOUT_S = 300
 # R1 spends its budget on reasoning first; the 4096 default leaves its answer empty.
-MAX_TOKENS = {"generator": 2000, "critic": 12000, "changelog": 400}
+MAX_TOKENS = {"generator": 2000, "critic": 12000, "changelog": 400, "reviewer": 6000}
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
@@ -28,9 +28,15 @@ class FeatherlessClient:
             "critic": os.environ.get("CRITIC_MODEL", "deepseek-ai/DeepSeek-R1-0528"),
         }
         self.models["changelog"] = self.models["generator"]
+        self.reviewers = [model.strip() for model in os.environ.get("REVIEW_MODELS", "").split(",") if model.strip()]
 
     def complete(self, role, system, user):
-        model = self.models[role]
+        return self._send(self.models[role], role, system, user)
+
+    def review(self, turn, system, user):
+        return self._send(self.reviewers[turn % len(self.reviewers)], "reviewer", system, user)
+
+    def _send(self, model, role, system, user):
         body = {
             "model": model,
             "temperature": 0,
@@ -59,6 +65,7 @@ class OfflineClient:
     """Replays fixture outputs. `regression` makes V2 worse so that path can be exercised."""
 
     models = {"generator": "offline-fixture", "critic": "offline-fixture", "changelog": "offline-fixture"}
+    reviewers = []
 
     def __init__(self, signature, scenario="clean"):
         stem = signature.replace("-", "_")

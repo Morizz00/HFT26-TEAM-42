@@ -116,21 +116,29 @@ class ChainSettlement:
         return memory.retrieve_bridge(signature, self._get)
 
     def post_evidence(self, inherited, gained):
+        """A run that gained supports what it reused. A run that didn't proves nothing about any one lesson,
+        so contradictions only come from a controlled run in agent/correction.py."""
         if self.reporter_entry_id is None:
             log.info("No verified entry this run, so no evidence to post")
             return
+        if not gained:
+            log.info("No gain this run, which contradicts no specific lesson")
+            return
         for item in inherited:
-            reply = self._post(
-                "/evidence",
-                {
-                    "agent_id": self.agent_id,
-                    "reused_entry_id": item["entry_id"],
-                    "supported": gained,
-                    "reporter_entry_id": self.reporter_entry_id,
-                },
-            )
+            reply = self.send_evidence(item["entry_id"], True, self.reporter_entry_id)
             if reply.get("status") == "rejected":
                 log.warning("Evidence for %s rejected: %s", item["entry_id"], reply["reason"])
+
+    def send_evidence(self, entry_id, supported, reporter_entry_id):
+        return self._post(
+            "/evidence",
+            {
+                "agent_id": self.agent_id,
+                "reused_entry_id": entry_id,
+                "supported": supported,
+                "reporter_entry_id": reporter_entry_id,
+            },
+        )
 
     def _etherscan(self, tx):
         return f"https://sepolia.etherscan.io/tx/{tx}" if self.chain_id == SEPOLIA_CHAIN_ID else None
