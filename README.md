@@ -27,6 +27,10 @@ Hackathon: CBIT Hacktoberfest 26 (30-31 Oct 2026). Team **Hocking**. Problem sta
 
 ---
 
+## Demo video
+
+**[Watch the demo](https://drive.google.com/drive/folders/1X0ruFJj3fJQVh-ZephUnmo2QtTJqtX2F?usp=sharing)** | **[Live site](https://autoevolve-one.vercel.app)**
+
 ## Problem statement
 
 Self-improving agents run inside closed environments, so users can't tell whether a claimed improvement is real, and what an agent learns from failure is thrown away. The brief asks for the **AutoEvolve Protocol**: an open-source framework where an agent runs a generate-critique-revise loop (V1, V2, V3), attests to its gains with zero-knowledge proofs, and publishes immutable snapshots to decentralized storage for other agents to learn from. It requires an iterative agent engine, a ZK proof of improvement, a decentralized memory registry, on-chain verification with a reward escrow, and a developer dashboard.
@@ -154,6 +158,42 @@ Agent B then read 8 entries directly from the registry with its own wallet, incl
 
 Agent B then posted evidence on-chain for all 8 inherited entries, which moved each one to `Validated` or kept it there. Evidence is per run, so it credits every inherited entry, not only the ones that helped.
 
+## Self-correcting memory
+
+A proof covers a score, not the explanation attached to it, so a proven lesson can still be wrong. We tested that on Sepolia. A labelled, deliberately wrong lesson ("every successful get must restart the item's ttl") went on-chain with a real proof of a real gain.
+
+Agent B read it from the chain and ran a controlled test on `ttl-cache`, with and without the lesson:
+
+| | Runs failing `test_read_does_not_extend_life` |
+|---|---|
+| With the lesson | 4 of 5 |
+| Without it | 0 of 5 |
+| After correction, with the agent's normal retrieved memory | 0 of 5 |
+
+That posted a [contradiction on Sepolia](https://sepolia.etherscan.io/tx/0x4421fe9585c6e1fd1974066b929405dc72f5432b5a790323b9662c5037c83229). The [entry](https://sepolia.etherscan.io/tx/0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6) stays on-chain and verified, but is now disputed and no longer recommended.
+
+- A lesson is blamed only when the named test fails in at least 2/3 of runs with it and at most 1/3 without it, over at least 3 trials.
+- A run that fails to gain no longer contradicts anything it inherited, because it says nothing about any one lesson.
+- An entry is disputed when contradictions outnumber supports on-chain, so no contract change was needed.
+
+The planted lesson shows the mechanism works on one known-bad case. It does not show that every bad lesson would be caught.
+
+```bash
+.venv/Scripts/python -m agent plant-lesson --old 100,75,100,60 --new 100,100,100,90
+.venv/Scripts/python -m agent challenge-lesson --entry-id <id> --reporter-entry-id <agent B verified entry>
+```
+
+## Independent reviewers
+
+Set `REVIEW_MODELS` and each revision also gets findings from one other model, in rotation. Reviewers never score. DeepSeek is the only judge on every version, because a total that rises when the grader changes proves nothing. Models never see each other's names.
+
+```bash
+.venv/Scripts/python -m agent review-experiment --task ttl-cache --trials 5   # with and without reviewers
+.venv/Scripts/python -m agent reviewer-reputation                             # writes shared/baked/reviewer_reputation.json
+```
+
+Reputation compares each reviewer's rounds with single-critic rounds at the same turn. With two reviewers in a fixed order, a reviewer and its turn are confounded.
+
 ## A/B result
 
 Agent B's first attempt at `ttl-cache`, 5 trials each way, using one lesson from Agent A's live `lru-cache` run. Trial count and reporting were fixed before the run. Results and every generated solution are in `shared/baked/`.
@@ -171,13 +211,13 @@ Memory fixed the two failures it covered, and left zero-TTL unfixed. Expiry-boun
 
 The registry also holds earlier entries from separate rehearsal runs, including a smaller A/B pair. The table above is the result we report.
 
-## Known limits
+## Scope and next steps
 
-- The proof covers the comparison over committed scores. It doesn't prove the harness ran honestly, so the test suite hash is stored in each entry for anyone to re-run.
-- `entryId` binds the CID to the entry on-chain, but the proof itself is not bound to the CID or the author.
-- The circuit doesn't range-check scores. The 0-100 limit is enforced in `zk/hash.py`.
-- LLM output isn't bit-identical at temperature 0, so we prove over the stored scores.
-- The harness runs candidate code in a subprocess with no secrets in its environment and sockets blocked, but it can read files on disk. It's not a security boundary.
+- Proofs cover the comparison over committed scores. Each entry stores the test suite hash so anyone can re-run the harness, and attesting the run itself is the next step.
+- `entryId` binds the CID, scores, task and author on-chain. Binding the proof to those same values is planned hardening.
+- Score ranges are enforced in `zk/hash.py`, with a range check inside the circuit planned.
+- LLM output can vary slightly at temperature 0, so proofs use the stored scores.
+- The harness runs candidate code in a subprocess with no secrets and sockets blocked, and container isolation is the next step for untrusted code.
 
 ## Third-party libraries
 

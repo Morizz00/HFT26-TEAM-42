@@ -154,6 +154,7 @@ The dashboard must render purely from this stream plus bridge reads. It must nev
 FEATHERLESS_API_KEY=
 GENERATOR_MODEL=Qwen/Qwen2.5-Coder-32B-Instruct
 CRITIC_MODEL=deepseek-ai/DeepSeek-R1-0528
+REVIEW_MODELS=moonshotai/Kimi-K2.5,zai-org/GLM-5
 PINATA_JWT=
 PINATA_GATEWAY=
 SEPOLIA_RPC_URL=
