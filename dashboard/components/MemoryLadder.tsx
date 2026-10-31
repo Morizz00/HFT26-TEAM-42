@@ -16,11 +16,11 @@ const isBad = (entry: MemoryEntry) => !entry.verified || entry.contradicted > en
 
 const warning = (entry: MemoryEntry) => {
   if (entry.kind === "regression") return "avoid";
-  return entry.contradicted > entry.supported ? "contradicted" : "unverified";
+  return entry.contradicted > entry.supported ? "disputed" : "unverified";
 };
 
 // Only entries from the two recorded runs go unmarked.
-export const ORIGIN_LABEL = { run: null, rehearsal: "rehearsal", attestation: "A/B result" } as const;
+export const ORIGIN_LABEL = { run: null, rehearsal: "rehearsal", attestation: "A/B result", planted: "planted test" } as const;
 
 const reuse = ({ supported, contradicted }: MemoryEntry) => {
   const parts = [];

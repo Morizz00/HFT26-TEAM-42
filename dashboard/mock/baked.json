@@ -2126,12 +2126,89 @@
      "tier": "candidate"
     }
    ]
+  },
+  {
+   "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+   "cid": "bafkreibfhfot6p3qpb5em7z537k5rb3tymgvfousznhua4ls5i5o6iwcqy",
+   "tx": "0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6",
+   "origin": "planted",
+   "author": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+   "agent_id": "agentA",
+   "task_signature": "ttl-cache",
+   "kind": "improvement",
+   "verified": true,
+   "hypothesis": "every successful get must restart the item's ttl, so items that are read stay alive",
+   "failure_pattern": "Planted on purpose to test self-correction. The score gain is real, this explanation of it is not.",
+   "fix_summary": "every successful get must restart the item's ttl, so items that are read stay alive",
+   "scores": {
+    "new": [
+     100,
+     100,
+     100,
+     90
+    ],
+    "old": [
+     100,
+     75,
+     100,
+     60
+    ]
+   },
+   "tier": "candidate",
+   "confidence": 0,
+   "supported": 0,
+   "contradicted": 1,
+   "supersedes": null,
+   "created_at": 1793433840000,
+   "evidence": [
+    {
+     "ts": 1793434008000,
+     "reporter": "0xCD4D60fE1BF1a447C40CDa4a06667748B94C4BCD",
+     "supported": false,
+     "tx": "0x4421fe9585c6e1fd1974066b929405dc72f5432b5a790323b9662c5037c83229",
+     "note": "Contradicted by Agent B after a controlled run with and without this lesson."
+    }
+   ],
+   "promotions": [
+    {
+     "ts": 1793433840000,
+     "tier": "candidate"
+    }
+   ]
   }
  ],
  "chain": {
-  "exported_at": 1793397337308,
-  "block": 12029491,
+  "exported_at": 1793435073806,
+  "block": 12032617,
   "log": [
+   {
+    "ts": 1793434008000,
+    "block": 12032531,
+    "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+    "tx": "0x4421fe9585c6e1fd1974066b929405dc72f5432b5a790323b9662c5037c83229",
+    "event": "EvidencePosted",
+    "actor": "0xCD4D60fE1BF1a447C40CDa4a06667748B94C4BCD",
+    "supported": false
+   },
+   {
+    "ts": 1793433840000,
+    "block": 12032517,
+    "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+    "tx": "0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6",
+    "event": "RewardPaid",
+    "actor": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+    "amount_wei": "1000000000000000"
+   },
+   {
+    "ts": 1793433840000,
+    "block": 12032517,
+    "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+    "tx": "0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6",
+    "event": "ImprovementRecorded",
+    "actor": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+    "cid": "bafkreibfhfot6p3qpb5em7z537k5rb3tymgvfousznhua4ls5i5o6iwcqy",
+    "verified": true
+   },
    {
     "ts": 1793395908000,
     "block": 12029374,
@@ -2420,19 +2497,19 @@
     {
      "label": "Agent A",
      "address": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
-     "wei": "12999999686143211"
+     "wei": "13999999643624679"
     },
     {
      "label": "Agent B",
      "address": "0xCD4D60fE1BF1a447C40CDa4a06667748B94C4BCD",
-     "wei": "16999999169696697"
+     "wei": "16999999166564274"
     }
    ],
    "escrow": {
     "address": "0xaE091221A5B143e9aC0E76989Cc052D3708d1F31",
-    "wei": "10000000000000000"
+    "wei": "9000000000000000"
    },
-   "total_paid_wei": "10000000000000000"
+   "total_paid_wei": "11000000000000000"
   }
  }
 }

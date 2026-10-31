@@ -1,7 +1,36 @@
 {
- "exported_at": 1793397337308,
- "block": 12029491,
+ "exported_at": 1793435073806,
+ "block": 12032617,
  "log": [
+  {
+   "ts": 1793434008000,
+   "block": 12032531,
+   "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+   "tx": "0x4421fe9585c6e1fd1974066b929405dc72f5432b5a790323b9662c5037c83229",
+   "event": "EvidencePosted",
+   "actor": "0xCD4D60fE1BF1a447C40CDa4a06667748B94C4BCD",
+   "supported": false,
+   "tier": 0
+  },
+  {
+   "ts": 1793433840000,
+   "block": 12032517,
+   "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+   "tx": "0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6",
+   "event": "RewardPaid",
+   "actor": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+   "amount_wei": "1000000000000000"
+  },
+  {
+   "ts": 1793433840000,
+   "block": 12032517,
+   "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+   "tx": "0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6",
+   "event": "ImprovementRecorded",
+   "actor": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+   "cid": "bafkreibfhfot6p3qpb5em7z537k5rb3tymgvfousznhua4ls5i5o6iwcqy",
+   "verified": true
+  },
   {
    "ts": 1793395908000,
    "block": 12029374,
@@ -1213,22 +1242,84 @@
     "to_version": "V3",
     "weights_version": "w-40-30-15-15"
    }
+  },
+  {
+   "entry_id": "0x531efceb9d7c36cad81a2867e3ad5f7f3028635a9500081bec6b43bd86b0e747",
+   "cid": "bafkreibfhfot6p3qpb5em7z537k5rb3tymgvfousznhua4ls5i5o6iwcqy",
+   "tx": "0x2e7df1a68a643404b860cc66017c23026c06d3ab6e7d55fbac6e59fbda34aba6",
+   "block": 12032517,
+   "author": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+   "verified": true,
+   "tier": 0,
+   "supported": 0,
+   "contradicted": 1,
+   "supersedes": "0x0000000000000000000000000000000000000000000000000000000000000000",
+   "created_at": 1793433840000,
+   "blob": {
+    "agent_address": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
+    "agent_id": "agentA",
+    "changelog": [
+     "every successful get must restart the item's ttl, so items that are read stay alive"
+    ],
+    "created_at": 1793433788,
+    "critique": {
+     "findings": [],
+     "model": "none"
+    },
+    "failure_pattern": "Planted on purpose to test self-correction. The score gain is real, this explanation of it is not.",
+    "from_version": "V1",
+    "harness": {
+     "image_digest": null,
+     "test_suite_hash": "0x719c6e004bfd6665f7e0e4f582b73a605f864890ed72466d7914f95a73b51903"
+    },
+    "hypothesis": "every successful get must restart the item's ttl, so items that are read stay alive",
+    "kind": "improvement",
+    "models": {
+     "critic": "planted",
+     "generator": "planted",
+     "temperature": 0
+    },
+    "parent_cid": null,
+    "planted": true,
+    "schema": "autoevolve.memory.v1",
+    "score_hash_new": "0x043edb5bcac48da7c6c7e4b6e8d27ac8f972c3f7181efeb5e8108f56aba6dd3a",
+    "score_hash_old": "0x189278440055dc01a2c3f441ae1d989408735851228b6ae51d49266032b3ba74",
+    "scores": {
+     "new": [
+      100,
+      100,
+      100,
+      90
+     ],
+     "old": [
+      100,
+      75,
+      100,
+      60
+     ]
+    },
+    "supersedes": null,
+    "system_prompt_hash": "0x6c0539c963dac947abd49ae1032fe6a810cd6a6e1cc4ed2c5e1398e346379531",
+    "task_signature": "ttl-cache",
+    "to_version": "V2",
+    "weights_version": "w-40-30-15-15"
+   }
   }
  ],
  "balances": {
   "authors": [
    {
     "address": "0x43E4e256Cc4b05C75826B2E6C3e287845928484D",
-    "wei": "12999999686143211"
+    "wei": "13999999643624679"
    },
    {
     "address": "0xCD4D60fE1BF1a447C40CDa4a06667748B94C4BCD",
-    "wei": "16999999169696697"
+    "wei": "16999999166564274"
    }
   ],
   "escrow": {
    "address": "0xaE091221A5B143e9aC0E76989Cc052D3708d1F31",
-   "wei": "10000000000000000"
+   "wei": "9000000000000000"
   }
  }
 }

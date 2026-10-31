@@ -7,7 +7,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from agent import experiment, loop, memory
+from agent import correction, experiment, loop, memory, reputation
 from agent.events import EventSink
 from agent.llm import FeatherlessClient, OfflineClient
 from agent.settlement import BakedSettlement, ChainSettlement
@@ -34,7 +34,37 @@ def parse_args(argv=None):
     ab.add_argument("--task", default="ttl-cache")
     ab.add_argument("--trials", type=int, default=5)
     commands.add_parser("experiment-attest")
+    review = commands.add_parser("review-experiment")
+    review.add_argument("--task", default="ttl-cache")
+    review.add_argument("--trials", type=int, default=5)
+    probe = commands.add_parser("probe-lesson")
+    probe.add_argument("--trials", type=int, default=5)
+    plant = commands.add_parser("plant-lesson")
+    plant.add_argument("--old", required=True, help="real scores, comma separated")
+    plant.add_argument("--new", required=True, help="real scores, comma separated")
+    challenge = commands.add_parser("challenge-lesson")
+    challenge.add_argument("--entry-id", required=True)
+    challenge.add_argument("--reporter-entry-id", required=True)
+    challenge.add_argument("--trials", type=int, default=5)
+    commands.add_parser("reviewer-reputation")
     return parser.parse_args(argv)
+
+
+def chain_settlement(letter):
+    from eth_account import Account
+
+    agent_id = f"agent{letter}"
+    sink = EventSink(f"correction-{agent_id}-{int(time.time())}", agent_id, os.environ["BRIDGE_URL"], os.environ.get("BRIDGE_TOKEN"))
+    settlement = ChainSettlement(
+        sink,
+        loop.Tree(sink),
+        os.environ["BRIDGE_URL"],
+        agent_id,
+        token=os.environ.get("BRIDGE_TOKEN"),
+        rpc_url=os.environ.get("SEPOLIA_RPC_URL"),
+        registry=os.environ.get("REGISTRY_ADDRESS"),
+    )
+    return settlement, Account.from_key(os.environ[f"AGENT_{letter}_PRIVATE_KEY"]).address
 
 
 def main(argv=None):
@@ -49,6 +79,34 @@ def main(argv=None):
         result = experiment.run(FeatherlessClient(), args.task, memory.retrieve_baked(), args.trials)
         experiment.OUTPUT.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
         print(f"off {result['off']['mean_total']} on {result['on']['mean_total']} wrote {experiment.OUTPUT}")
+        return
+    if args.command == "review-experiment":
+        stamp = int(time.time())
+        output = experiment.RUNS_DIR / f"review-experiment-{args.task}-{stamp}.json"
+        output.parent.mkdir(exist_ok=True)
+        result = experiment.compare_reviewers(FeatherlessClient(), args.task, args.trials, output, stamp)
+        print(f"{len(result['control'])} control, {len(result['panel'])} panel, wrote {output}")
+        return
+    if args.command == "probe-lesson":
+        output = experiment.RUNS_DIR / f"lesson-probe-{int(time.time())}.json"
+        output.parent.mkdir(exist_ok=True)
+        result = correction.probe(FeatherlessClient(), "ttl-cache", correction.PLANTED_TTL, args.trials, output)
+        print(json.dumps(result, indent=1))
+        return
+    if args.command == "reviewer-reputation":
+        table = reputation.score(reputation.load(sorted(experiment.RUNS_DIR.glob("review-experiment-*.json"))))
+        reputation.OUTPUT.write_text(json.dumps(table, indent=1) + "\n", encoding="utf-8")
+        print(json.dumps(table, indent=1))
+        return
+    if args.command == "plant-lesson":
+        settlement, author = chain_settlement("A")
+        old, new = [[int(score) for score in text.split(",")] for text in (args.old, args.new)]
+        print(correction.plant(settlement, author, old, new), settlement.last_tx["tx"])
+        return
+    if args.command == "challenge-lesson":
+        settlement, _ = chain_settlement("B")
+        result = correction.challenge(FeatherlessClient(), settlement, args.entry_id, args.reporter_entry_id, args.trials)
+        print(json.dumps(result, indent=1))
         return
     if args.command == "experiment-attest":
         from eth_account import Account

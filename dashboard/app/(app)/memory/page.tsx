@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BarValue } from "@/components/charts";
+import { CorrectionTrail } from "@/components/CorrectionTrail";
 import { EntryAudit } from "@/components/EntryAudit";
 import { MemoryLadder } from "@/components/MemoryLadder";
 import { rippleChange } from "@/components/Ripple";
@@ -89,6 +90,7 @@ export default function MemoryPage() {
         </p>
       ) : null}
       {live !== "on" ? <p className="sample-note">{SNAPSHOT_NOTE} Evidence is posted per run, so it credits every inherited entry, not only the ones that helped.</p> : null}
+      <CorrectionTrail onOpen={setSelected} />
       <div className="memory-filter" role="group" aria-label="Filter by task">
         <button type="button" className="btn" aria-pressed={task === null} onClick={() => filter(null)}>
           All <span>{entries.length}</span>
